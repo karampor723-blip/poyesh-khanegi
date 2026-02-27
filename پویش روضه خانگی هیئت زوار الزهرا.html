@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پویش روضه خانگی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- فونت پیش‌فرض (در صورت عدم دسترسی به فونت سفارشی) -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@200;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- محل قرارگیری آیکن سایت (Favicon) -->
+    <link rel="icon" href="" id="favicon" type="image/x-icon">
+    <link rel="shortcut icon" href="" id="shortcut-favicon" type="image/x-icon">
+    
+    <style>
+        :root {
+            --bg: #ffffff;
+            --card: rgba(26, 47, 26, 0.9);
+            --fg: #f5f0e6;
+            --muted: #a8b5a0;
+            --accent: #ffffff;
+            --border: rgba(201, 162, 39, 0.3);
+            --custom-bg-image: none;
+            --custom-font: 'Vazirmatn', sans-serif;
+        }
+        
+        * { 
+            font-family: var(--custom-font, 'Vazirmatn', sans-serif); 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--fg); 
+            min-height: 100vh; 
+            margin: 0; 
+            overflow-x: hidden; 
+            position: relative;
+        }
+        
+        /* بک‌گراند با تصویر سفارشی */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: var(--custom-bg-image) center/cover no-repeat fixed;
+            z-index: -1;
+            opacity: 0.2;
+        }
+        
+        /* پس زمینه و ذرات (در صورت نبود تصویر) */
+        .bg-fallback {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 30%, #1a2f1a, #0d1f0d);
+            z-index: -2;
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fade-in 0.8s ease-out forwards; }
+        
+        .container-box {
+            background: var(--card); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 2rem; max-width: 600px; width: 90%; margin: 2rem auto;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+        
+        input, select {
+            width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--fg); font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+        
+        .btn {
+            width: 100%; padding: 1rem; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #e8c547); color: #0d1f0d; }
+        .btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .btn-danger { background: #b91c1c; color: white; padding: 0.3rem 0.8rem; font-size: 0.8rem; width: auto; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(201, 162, 39, 0.3); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.8rem; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: var(--accent); }
+        
+        .admin-trigger {
+            position: fixed; bottom: 10px; left: 10px;
+            width: 20px; height: 20px; opacity: 0.1; cursor: pointer;
+        }
+        .admin-trigger:hover { opacity: 0.5; }
+
+        .toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #0d1f0d; padding: 1rem 2rem;
+            border-radius: 10px; font-weight: bold; transition: bottom 0.5s;
+            z-index: 9999;
+        }
+        .toast.show { bottom: 20px; }
+        
+        .settings-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 15px;
+            width: 300px;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .settings-panel h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .settings-panel label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .settings-panel input {
+            margin-bottom: 15px;
+            padding: 0.6rem;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        .settings-panel .btn {
+            padding: 0.6rem;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .settings-panel .file-info {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        .hidden {
+            display: none;
+        }
+        .preview-box {
+            width: 100%;
+            height: 60px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* استایل قرعه‌کشی */
+        .draw-section {
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .draw-result {
+            background: linear-gradient(135deg, #1a2f1a, #0d1f0d);
+            border: 2px solid var(--accent);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .winner-name {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(201, 162, 39, 0.5);
+        }
+        
+        .winner-info {
+            font-size: 1.1rem;
+            color: var(--fg);
+            margin: 5px 0;
+        }
+        
+        .draw-animation {
+            animation: pulse 1s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: rgba(201, 162, 39, 0.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            flex: 1;
+            min-width: 150px;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--fg);
+        }
+        
+        .history-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            border-right: 3px solid var(--accent);
+        }
+        
+        .history-date {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- پس زمینه پیش‌فرض (در صورت نبود تصویر) -->
+    <div class="bg-fallback"></div>
+    
+    <!-- پنل تنظیمات ظاهری (فقط برای مدیر) -->
+    <div id="settingsPanel" class="settings-panel hidden">
+        <h3>🎨 تنظیمات ظاهری سایت</h3>
+        
+        <label>📷 آدرس تصویر بک‌گراند (محلی یا اینترنتی)</label>
+        <input type="text" id="bgImageInput" placeholder="مثال: images/background.jpg یا https://..." value="">
+        <div id="bgPreview" class="preview-box" style="display: none;"></div>
+        <div class="file-info" id="bgFileName"></div>
+        
+        <label>🔖 آدرس آیکن سایت (Favicon)</label>
+        <input type="text" id="faviconInput" placeholder="مثال: images/favicon.ico یا https://..." value="">
+        <div class="file-info" id="faviconFileName"></div>
+        
+        <label>✒️ آدرس فونت (فایل محلی یا Google Fonts)</label>
+        <input type="text" id="fontInput" placeholder="مثال: fonts/MyFont.woff2 یا https://fonts..." value="">
+        
+        <label>📝 نام فونت (برای فایل‌های محلی)</label>
+        <input type="text" id="fontNameInput" placeholder="مثال: Vazirmatn, MyFont" value="Vazirmatn">
+        
+        <button onclick="applySettings()" class="btn btn-primary">✅ اعمال تغییرات</button>
+        <button onclick="resetToDefault()" class="btn" style="background: #666; color: white;">🔄 بازگشت به پیش‌فرض</button>
+        <button onclick="closeSettings()" class="btn" style="background: #b91c1c; color: white;">❌ بستن</button>
+        
+        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">
+            <p style="color: var(--muted); font-size: 0.8rem;">
+                <strong>📁 نکته:</strong> برای استفاده از فایل‌های محلی، فایل‌ها را در پوشه‌های زیر قرار دهید:
+                <br>- تصاویر: پوشه images/
+                <br>- فونت‌ها: پوشه fonts/
+                <br>- آیکن: پوشه images/
+            </p>
+        </div>
+    </div>
+
+    <!-- صفحه ثبت نام (عمومی) -->
+    <div id="publicView" class="animate-in">
+        <div class="text-center py-12">
+            <h1 class="text-5xl font-black mb-2" style="color: var(--accent);">پویش روضه خانگی</h1>
+            <p class="text-lg" style="color: var(--muted);">در محفل اهل بیت علیهم السلام حاضر شوید</p>
+        </div>
+
+        <div class="container-box">
+            <form id="regForm">
+                <h2 class="text-xl font-bold mb-6 text-center" style="color: var(--accent);">فرم ثبت نام</h2>
+                
+                <label class="block mb-1 text-sm" style="color: var(--muted);">نام و نام خانوادگی</label>
+                <input type="text" id="name" placeholder="مثال: محمد احمدی" required>
+                
+                <label class="block mb-1 text-sm" style="color: var(--muted);">شماره تماس</label>
+                <input type="tel" id="phone" placeholder="09123456789" required>
+                
+                <label class="block mb-1 text-sm" style="color: var(--muted);">روز برگزاری</label>
+                <select id="day" required>
+                    <option value="">انتخاب کنید...</option>
+                    <option value="شنبه">شنبه</option>
+                    <option value="یکشنبه">یکشنبه</option>
+                    <option value="دوشنبه">دوشنبه</option>
+                    <option value="سه‌شنبه">سه‌شنبه</option>
+                    <option value="چهارشنبه">چهارشنبه</option>
+                    <option value="پنجشنبه">پنجشنبه</option>
+                </select>
+                
+                <button type="submit" class="btn btn-primary mt-4">ثبت نام در پویش</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- پنل مدیریت (مخفی) -->
+    <div id="adminView" class="hidden">
+        <div class="container-box" style="margin-top: 5rem; max-width: 800px;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold" style="color: var(--accent);">پنل مدیریت اسامی</h2>
+                <div>
+                    <button onclick="openSettings()" class="text-sm px-3 py-1 border rounded-lg ml-2" style="border-color: var(--border); color: var(--muted);">⚙️ تنظیمات ظاهری</button>
+                    <button onclick="logout()" class="text-sm px-3 py-1 border rounded-lg" style="border-color: var(--border); color: var(--muted);">🚪 خروج</button>
+                </div>
+            </div>
+            
+            <!-- بخش قرعه‌کشی -->
+            <div class="draw-section">
+                <h3 class="text-lg font-bold mb-4" style="color: var(--accent);">🎲 قرعه‌کشی</h3>
+                
+                <div class="filter-section">
+                    <select id="drawDayFilter" class="filter-select">
+                        <option value="all">همه روزها</option>
+                        <option value="شنبه">شنبه</option>
+                        <option value="یکشنبه">یکشنبه</option>
+                        <option value="دوشنبه">دوشنبه</option>
+                        <option value="سه‌شنبه">سه‌شنبه</option>
+                        <option value="چهارشنبه">چهارشنبه</option>
+                        <option value="پنجشنبه">پنجشنبه</option>
+                    </select>
+                    
+                    <select id="drawCount" class="filter-select">
+                        <option value="1">۱ نفر</option>
+                        <option value="2">۲ نفر</option>
+                        <option value="3">۳ نفر</option>
+                        <option value="5">۵ نفر</option>
+                        <option value="10">۱۰ نفر</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="startDraw()" class="btn btn-success" style="flex: 2;">🎲 شروع قرعه‌کشی</button>
+                    <button onclick="clearDrawResult()" class="btn" style="flex: 1; background: #666;">🗑️ پاک کردن</button>
+                </div>
+                
+                <!-- نمایش نتیجه قرعه‌کشی -->
+                <div id="drawResult" class="draw-result hidden">
+                    <div class="text-3xl mb-2">🏆</div>
+                    <div style="color: var(--muted);">برنده(های) قرعه‌کشی</div>
+                    <div id="winnersList" class="winner-name"></div>
+                </div>
+                
+                <!-- تاریخچه قرعه‌کشی‌ها -->
+                <div id="drawHistory" class="mt-4">
+                    <h4 class="text-sm font-bold mb-2" style="color: var(--muted);">📜 تاریخچه قرعه‌کشی‌ها</h4>
+                    <div id="historyList"></div>
+                </div>
+            </div>
+            
+            <div class="mb-4 p-3 rounded-lg" style="background: rgba(0,0,0,0.2);">
+                تعداد کل ثبت نامی‌ها: <span id="totalCount" class="font-bold" style="color: var(--accent);">0</span> نفر
+            </div>
+
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>نام</th>
+                            <th>شماره تماس</th>
+                            <th>روز</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- اسامی اینجا نمایش داده می‌شوند -->
+                    </tbody>
+                </table>
+                <p id="emptyMsg" class="text-center py-8 hidden" style="color: var(--muted);">هنوز کسی ثبت نام نکرده است.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- دکمه مخفی ورود به پنل مدیریت -->
+    <div class="admin-trigger" onclick="checkAccess()" title="ورود مدیر"></div>
+
+    <!-- پیام های سیستم -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const ADMIN_PASSWORD = "1234";
+        let registrations = JSON.parse(localStorage.getItem('poyesh_data')) || [];
+        let drawHistory = JSON.parse(localStorage.getItem('draw_history')) || [];
+
+        // بارگذاری تنظیمات ذخیره شده
+        function loadSettings() {
+            const savedBg = localStorage.getItem('custom_bg');
+            const savedFavicon = localStorage.getItem('custom_favicon');
+            const savedFont = localStorage.getItem('custom_font');
+            const savedFontName = localStorage.getItem('custom_font_name');
+            
+            if (savedBg) {
+                applyBackground(savedBg);
+                document.getElementById('bgImageInput').value = savedBg;
+                updateFileName('bgFileName', savedBg);
+            }
+            
+            if (savedFavicon) {
+                applyFavicon(savedFavicon);
+                document.getElementById('faviconInput').value = savedFavicon;
+                updateFileName('faviconFileName', savedFavicon);
+            }
+            
+            if (savedFont && savedFontName) {
+                applyFont(savedFont, savedFontName);
+                document.getElementById('fontInput').value = savedFont;
+                document.getElementById('fontNameInput').value = savedFontName;
+            }
+        }
+
+        function updateFileName(elementId, path) {
+            const element = document.getElementById(elementId);
+            if (path) {
+                const fileName = path.split('/').pop();
+                element.textContent = `📄 فایل: ${fileName}`;
+            } else {
+                element.textContent = '';
+            }
+        }
+
+        function applyBackground(path) {
+            if (path) {
+                document.documentElement.style.setProperty('--custom-bg-image', `url('${path}')`);
+                const preview = document.getElementById('bgPreview');
+                preview.style.backgroundImage = `url('${path}')`;
+                preview.style.display = 'block';
+            }
+        }
+
+        function applyFavicon(path) {
+            if (path) {
+                document.getElementById('favicon').href = path;
+                document.getElementById('shortcut-favicon').href = path;
+            }
+        }
+
+        function applyFont(fontPath, fontName) {
+            if (fontPath.includes('fonts.googleapis.com') || fontPath.endsWith('.css')) {
+                let fontLink = document.getElementById('custom-font-link');
+                if (!fontLink) {
+                    fontLink = document.createElement('link');
+                    fontLink.id = 'custom-font-link';
+                    fontLink.rel = 'stylesheet';
+                    document.head.appendChild(fontLink);
+                }
+                fontLink.href = fontPath;
+            } 
+            else if (fontPath.match(/\.(woff2?|ttf|otf)$/)) {
+                const style = document.createElement('style');
+                style.id = 'custom-font-face';
+                style.textContent = `
+                    @font-face {
+                        font-family: '${fontName}';
+                        src: url('${fontPath}') format('${getFontFormat(fontPath)}');
+                        font-weight: normal;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                `;
+                
+                const oldStyle = document.getElementById('custom-font-face');
+                if (oldStyle) oldStyle.remove();
+                
+                document.head.appendChild(style);
+            }
+            
+            document.documentElement.style.setProperty('--custom-font', `'${fontName}', 'Vazirmatn', sans-serif`);
+        }
+
+        function getFontFormat(path) {
+            if (path.endsWith('.woff2')) return 'woff2';
+            if (path.endsWith('.woff')) return 'woff';
+            if (path.endsWith('.ttf')) return 'truetype';
+            if (path.endsWith('.otf')) return 'opentype';
+            return 'woff2';
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function saveData() {
+            localStorage.setItem('poyesh_data', JSON.stringify(registrations));
+            renderAdmin(); // به‌روزرسانی نمایش
+        }
+
+        function saveDrawHistory() {
+            localStorage.setItem('draw_history', JSON.stringify(drawHistory));
+            renderDrawHistory();
+        }
+
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const day = document.getElementById('day').value;
+
+            registrations.push({ name, phone, day, date: new Date().toLocaleDateString('fa-IR') });
+            saveData();
+            
+            showToast('✅ ثبت نام شما با موفقیت انجام شد');
+            this.reset();
+        });
+
+        function checkAccess() {
+            const pass = prompt('لطفا رمز عبور مدیریت را وارد کنید:');
+            if (pass === ADMIN_PASSWORD) {
+                document.getElementById('publicView').classList.add('hidden');
+                document.getElementById('adminView').classList.remove('hidden');
+                renderAdmin();
+                renderDrawHistory();
+                loadSettings();
+            } else if (pass !== null) {
+                alert('❌ رمز عبور اشتباه است!');
+            }
+        }
+
+        function logout() {
+            document.getElementById('adminView').classList.add('hidden');
+            document.getElementById('publicView').classList.remove('hidden');
+            document.getElementById('settingsPanel').classList.add('hidden');
+        }
+
+        function renderAdmin() {
+            const tbody = document.getElementById('tableBody');
+            const emptyMsg = document.getElementById('emptyMsg');
+            const count = document.getElementById('totalCount');
+            
+            tbody.innerHTML = '';
+            count.textContent = registrations.length;
+
+            if (registrations.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+            
+            emptyMsg.classList.add('hidden');
+
+            registrations.forEach((user, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td style="direction: ltr; text-align: right;">${user.phone}</td>
+                    <td>${user.day}</td>
+                    <td><button class="btn btn-danger" onclick="deleteUser(${index})">🗑️ حذف</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteUser(index) {
+            if(confirm('آیا از حذف این فرد مطمئن هستید؟')) {
+                registrations.splice(index, 1);
+                saveData();
+                renderAdmin();
+                showToast('🗑️ فرد مورد نظر حذف شد');
+            }
+        }
+
+        // توابع قرعه‌کشی
+        function startDraw() {
+            const dayFilter = document.getElementById('drawDayFilter').value;
+            const drawCount = parseInt(document.getElementById('drawCount').value);
+            
+            // فیلتر کردن شرکت‌کنندگان بر اساس روز
+            let participants = registrations;
+            if (dayFilter !== 'all') {
+                participants = registrations.filter(r => r.day === dayFilter);
+            }
+            
+            if (participants.length === 0) {
+                showToast('⚠️ هیچ شرکت‌کننده‌ای برای قرعه‌کشی وجود ندارد!');
+                return;
+            }
+            
+            if (participants.length < drawCount) {
+                showToast(`⚠️ فقط ${participants.length} نفر برای قرعه‌کشی وجود دارد!`);
+                return;
+            }
+            
+            // انیمیشن قرعه‌کشی
+            const resultDiv = document.getElementById('drawResult');
+            resultDiv.classList.add('draw-animation');
+            setTimeout(() => resultDiv.classList.remove('draw-animation'), 1000);
+            
+            // انتخاب برنده‌های تصادفی
+            const shuffled = [...participants].sort(() => 0.5 - Math.random());
+            const winners = shuffled.slice(0, drawCount);
+            
+            // نمایش برنده‌ها
+            displayWinners(winners);
+            
+            // ذخیره در تاریخچه
+            const historyItem = {
+                date: new Date().toLocaleDateString('fa-IR'),
+                time: new Date().toLocaleTimeString('fa-IR'),
+                day: dayFilter === 'all' ? 'همه روزها' : dayFilter,
+                count: winners.length,
+                winners: winners.map(w => ({ name: w.name, phone: w.phone, day: w.day }))
+            };
+            
+            drawHistory.unshift(historyItem);
+            if (drawHistory.length > 10) drawHistory.pop(); // نگه‌داری آخرین ۱۰ قرعه‌کشی
+            
+            saveDrawHistory();
+        }
+        
+        function displayWinners(winners) {
+            const resultDiv = document.getElementById('drawResult');
+            const winnersList = document.getElementById('winnersList');
+            
+            let html = '';
+            winners.forEach((winner, index) => {
+                html += `<div class="winner-info">
+                    <span style="color: var(--accent); font-weight: bold;">🏅 نفر ${index + 1}:</span>
+                    <span style="font-size: 1.5rem;">${winner.name}</span>
+                    <div style="font-size: 0.9rem; color: var(--muted);">📞 ${winner.phone} | روز: ${winner.day}</div>
+                </div>`;
+            });
+            
+            winnersList.innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+        
+        function clearDrawResult() {
+            document.getElementById('drawResult').classList.add('hidden');
+        }
+        
+        function renderDrawHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (drawHistory.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--muted); text-align: center;">تاکنون قرعه‌کشی انجام نشده است</p>';
+                return;
+            }
+            
+            let html = '';
+            drawHistory.forEach((item, index) => {
+                html += `<div class="history-item">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>🎲 قرعه‌کشی ${item.count} نفره</span>
+                        <span class="history-date">${item.date} - ${item.time}</span>
+                    </div>
+                    <div style="color: var(--muted); font-size: 0.8rem;">روز: ${item.day}</div>
+                    <div style="margin-top: 5px;">
+                        ${item.winners.map(w => `🏆 ${w.name} (${w.day})`).join('<br>')}
+                    </div>
+                </div>`;
+            });
+            
+            historyList.innerHTML = html;
+        }
+
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.add('hidden');
+        }
+
+        function resetToDefault() {
+            localStorage.removeItem('custom_bg');
+            localStorage.removeItem('custom_favicon');
+            localStorage.removeItem('custom_font');
+            localStorage.removeItem('custom_font_name');
+            
+            document.documentElement.style.setProperty('--custom-bg-image', 'none');
+            document.getElementById('favicon').href = '';
+            document.getElementById('shortcut-favicon').href = '';
+            document.documentElement.style.setProperty('--custom-font', "'Vazirmatn', sans-serif");
+            
+            document.getElementById('bgImageInput').value = '';
+            document.getElementById('faviconInput').value = '';
+            document.getElementById('fontInput').value = '';
+            document.getElementById('fontNameInput').value = 'Vazirmatn';
+            
+            document.getElementById('bgPreview').style.display = 'none';
+            document.getElementById('bgFileName').textContent = '';
+            document.getElementById('faviconFileName').textContent = '';
+            
+            showToast('✅ بازگشت به تنظیمات پیش‌فرض');
+        }
+
+        function applySettings() {
+            const bgUrl = document.getElementById('bgImageInput').value;
+            const faviconUrl = document.getElementById('faviconInput').value;
+            const fontUrl = document.getElementById('fontInput').value;
+            const fontName = document.getElementById('fontNameInput').value;
+
+            if (bgUrl) {
+                applyBackground(bgUrl);
+                localStorage.setItem('custom_bg', bgUrl);
+                updateFileName('bgFileName', bgUrl);
+            }
+
+            if (faviconUrl) {
+                applyFavicon(faviconUrl);
+                localStorage.setItem('custom_favicon', faviconUrl);
+                updateFileName('faviconFileName', faviconUrl);
+            }
+
+            if (fontUrl && fontName) {
+                applyFont(fontUrl, fontName);
+                localStorage.setItem('custom_font', fontUrl);
+                localStorage.setItem('custom_font_name', fontName);
+            }
+
+            showToast('✅ تنظیمات با موفقیت اعمال شد');
+        }
+
+        // بارگذاری تنظیمات هنگام لود صفحه
+        loadSettings();
+    </script>
+</body>
+</html>
